@@ -108,24 +108,18 @@ export default function Board({ game, flipped }: BoardProps) {
                   )}
                 </AnimatePresence>
 
-                {/* Legal move destination indicator: Clean centered dot */}
+                {/* Legal move destination indicator: Clear solid centered dot */}
                 {isLegalTarget && !cell && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute w-[32%] h-[32%] rounded-full bg-felt/70 shadow-sm pointer-events-none z-20"
+                  <span
+                    className="absolute w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-black/40 dark:bg-white/50 ring-2 ring-black/10 dark:ring-white/20 shadow pointer-events-none z-20"
                     aria-hidden="true"
                   />
                 )}
 
-                {/* Legal capture target indicator: Distinct outer ring */}
+                {/* Legal capture target indicator: Clear bold outer ring */}
                 {isLegalTarget && cell && (
-                  <motion.span
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute inset-1 rounded-full ring-4 ring-felt/80 bg-felt/20 pointer-events-none z-20"
+                  <span
+                    className="absolute inset-1 rounded-full ring-4 ring-black/40 dark:ring-white/50 bg-black/10 dark:bg-white/15 pointer-events-none z-20"
                     aria-hidden="true"
                   />
                 )}
