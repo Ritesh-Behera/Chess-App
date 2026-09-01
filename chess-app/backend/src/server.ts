@@ -38,6 +38,8 @@ app.use(
 );
 app.use(express.json());
 
+app.set("trust proxy", 1); // Trust first proxy from Railway/Cloudflare
+
 const isProduction = process.env.NODE_ENV === "production";
 
 app.use(
@@ -45,13 +47,15 @@ app.use(
     secret: process.env.SESSION_SECRET || "dev-secret-change-me",
     resave: false,
     saveUninitialized: false,
+    name: "chess.sid",
     proxy: true,
     cookie: {
       httpOnly: true,
       sameSite: isProduction ? "none" : "lax",
       secure: isProduction,
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-    },
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+      ...(isProduction ? { partitioned: true } : {}), // For modern Chrome third-party cookie partitioning
+    } as any,
   })
 );
 

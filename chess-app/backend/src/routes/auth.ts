@@ -32,6 +32,7 @@ router.get("/me", (req, res) => {
 router.post("/logout", (req, res) => {
   req.logout(() => {
     req.session.destroy(() => {
+      res.clearCookie("chess.sid");
       res.clearCookie("connect.sid");
       res.json({ ok: true });
     });

@@ -87,28 +87,43 @@ export default function Board({ game, flipped }: BoardProps) {
                 <AnimatePresence mode="popLayout" initial={false}>
                   {cell && (
                     <motion.div
-                      key={`${cell.color}${cell.type}-${square}`}
+                      key={`${cell.color}${cell.type}`}
                       layoutId={`piece-${square}`}
-                      initial={{ scale: 0.6, opacity: 0 }}
+                      layout
+                      initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 32 }}
-                      className="w-[78%] h-[78%] pointer-events-none drop-shadow"
+                      exit={{ scale: 0.7, opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 450,
+                        damping: 30,
+                        mass: 0.8,
+                      }}
+                      className="w-[82%] h-[82%] pointer-events-none drop-shadow-md z-10"
                     >
                       <PieceSVG type={cell.type} palette={palette} className="w-full h-full" />
                     </motion.div>
                   )}
                 </AnimatePresence>
 
+                {/* Legal move destination indicator: Clean centered dot */}
                 {isLegalTarget && !cell && (
-                  <span
-                    className="absolute w-[28%] h-[28%] rounded-full bg-felt/50"
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute w-[32%] h-[32%] rounded-full bg-felt/70 shadow-sm pointer-events-none z-20"
                     aria-hidden="true"
                   />
                 )}
+
+                {/* Legal capture target indicator: Distinct outer ring */}
                 {isLegalTarget && cell && (
-                  <span
-                    className="absolute inset-1 rounded-sm ring-4 ring-felt/60"
+                  <motion.span
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute inset-1 rounded-full ring-4 ring-felt/80 bg-felt/20 pointer-events-none z-20"
                     aria-hidden="true"
                   />
                 )}
