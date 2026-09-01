@@ -15,6 +15,31 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-3 sm:gap-4">
+          <Link
+            to="/"
+            className={[
+              "text-sm font-medium px-2 py-1 rounded transition-colors",
+              location.pathname === "/"
+                ? "text-brass"
+                : "text-ink-muted hover:text-ink",
+            ].join(" ")}
+          >
+            Play
+          </Link>
+
+          <Link
+            to="/puzzles"
+            className={[
+              "text-sm font-medium px-2 py-1 rounded transition-colors flex items-center gap-1",
+              location.pathname.startsWith("/puzzles")
+                ? "text-brass font-semibold"
+                : "text-ink-muted hover:text-ink",
+            ].join(" ")}
+          >
+            <span>🧩</span>
+            <span>Puzzles</span>
+          </Link>
+
           {user?.role === "admin" && (
             <Link
               to="/admin"

@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth";
 import gameRoutes from "./routes/games";
 import adminRoutes from "./routes/admin";
 
+import activityRoutes from "./routes/activity";
+
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
@@ -60,6 +62,7 @@ app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/activity", activityRoutes);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // eslint-disable-next-line no-console

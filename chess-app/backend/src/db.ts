@@ -34,6 +34,17 @@ db.exec(`
     move_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS puzzle_attempts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    puzzle_id TEXT NOT NULL,
+    puzzle_date TEXT NOT NULL,
+    solved INTEGER NOT NULL DEFAULT 1,
+    attempts INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(user_id, puzzle_date)
+  );
 `);
 
 export default db;

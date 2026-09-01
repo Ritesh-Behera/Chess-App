@@ -64,10 +64,11 @@ router.delete("/games/:id", (req, res) => {
   res.json({ ok: true });
 });
 
-// Wipe every game and every non-admin user — a full reset back to a clean slate.
+// Wipe every game, puzzle attempts, and every non-admin user — a full reset back to a clean slate.
 router.post("/reset", (_req, res) => {
   const wipe = db.transaction(() => {
     db.prepare("DELETE FROM games").run();
+    db.prepare("DELETE FROM puzzle_attempts").run();
     db.prepare("DELETE FROM users WHERE role != 'admin'").run();
   });
   wipe();

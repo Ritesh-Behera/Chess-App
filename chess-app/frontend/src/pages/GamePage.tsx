@@ -24,22 +24,43 @@ export default function GamePage() {
   };
 
   const handleSave = async () => {
-    if (!user) return;
     setSaving(true);
     setSavedMessage(null);
-    try {
-      await api.post("/api/games", {
-        whiteName,
-        blackName,
-        pgn: game.pgn(),
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const gameData = {
+      whiteName,
+      blackName,
+      pgn: game.pgn(),
+      result: game.resultCode(),
+      endReason: game.status,
+      moveCount: game.history.length,
+    };
+
+    if (user) {
+      try {
+        await api.post("/api/games", gameData);
+        setSavedMessage("Game saved.");
+      } catch (err) {
+        setSavedMessage(err instanceof Error ? err.message : "Could not save game.");
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      // Guest local storage
+      const todayKey = `chess_activity_${todayStr}`;
+      const existingRaw = localStorage.getItem(todayKey);
+      let existing = existingRaw ? JSON.parse(existingRaw) : { games: [], puzzles: [] };
+      existing.games.push({
+        id: Date.now(),
+        white_name: whiteName,
+        black_name: blackName,
         result: game.resultCode(),
-        endReason: game.status,
-        moveCount: game.history.length,
+        end_reason: game.status,
+        move_count: game.history.length,
+        created_at: new Date().toISOString(),
       });
-      setSavedMessage("Game saved.");
-    } catch (err) {
-      setSavedMessage(err instanceof Error ? err.message : "Could not save game.");
-    } finally {
+      localStorage.setItem(todayKey, JSON.stringify(existing));
+      setSavedMessage("Game saved locally.");
       setSaving(false);
     }
   };
@@ -75,7 +96,7 @@ export default function GamePage() {
             flipped={flipped}
             onFlip={() => setFlipped((f) => !f)}
             onNewGame={handleNewGame}
-            onSaveGame={user ? handleSave : undefined}
+            onSaveGame={handleSave}
             canSave={game.history.length > 0}
             saving={saving}
           />

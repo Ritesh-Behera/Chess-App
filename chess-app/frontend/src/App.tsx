@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import GamePage from "./pages/GamePage";
+import PuzzlePage from "./pages/PuzzlePage";
 import LoginPage from "./pages/LoginPage";
 import AdminPage from "./pages/AdminPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -13,6 +14,7 @@ export default function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<GamePage />} />
+          <Route path="/puzzles" element={<PuzzlePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/admin"

@@ -22,6 +22,16 @@ export interface GameRecord {
   created_at: string;
 }
 
+export interface PuzzleAttempt {
+  id: number;
+  user_id: number;
+  puzzle_id: string;
+  puzzle_date: string; // "YYYY-MM-DD"
+  solved: number; // 0 or 1
+  attempts: number;
+  created_at: string;
+}
+
 declare global {
   namespace Express {
     interface User {
