@@ -1,10 +1,14 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = localStorage.getItem("chess_auth_token");
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
   const res = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...(options.headers || {}),
     },
     ...options,

@@ -17,6 +17,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = async () => {
     try {
+      // Check if URL has ?token=... from Google OAuth redirect
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get("token");
+      if (urlToken) {
+        localStorage.setItem("chess_auth_token", urlToken);
+        // Clean URL query without page reload
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
       const data = await api.get<{ user: AppUser | null }>("/api/auth/me");
       setUser(data.user);
     } catch {
@@ -27,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    localStorage.removeItem("chess_auth_token");
     await api.post("/api/auth/logout");
     setUser(null);
   };
