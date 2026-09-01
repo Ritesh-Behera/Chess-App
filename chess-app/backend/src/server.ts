@@ -17,7 +17,20 @@ app.set("trust proxy", 1);
 
 app.use(
   cors({
-    origin: CLIENT_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      const allowedOrigins = [
+        CLIENT_URL,
+        CLIENT_URL.replace(/\/$/, ""),
+        "http://localhost:5173",
+        "https://chess-app-five-eta.vercel.app",
+      ];
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+        return callback(null, true);
+      }
+      return callback(null, true); // Permissive in production with credentials
+    },
     credentials: true,
   })
 );

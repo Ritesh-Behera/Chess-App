@@ -3,11 +3,11 @@ import passport from "passport";
 
 const router = Router();
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const getClientUrl = () => process.env.CLIENT_URL || "http://localhost:5173";
 
 router.get("/google", (req, res, next) => {
   if (!process.env.GOOGLE_CLIENT_ID) {
-    return res.redirect(`${CLIENT_URL}/login?error=google_not_configured`);
+    return res.redirect(`${getClientUrl()}/login?error=google_not_configured`);
   }
   return passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
 });
@@ -15,10 +15,10 @@ router.get("/google", (req, res, next) => {
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${CLIENT_URL}/login?error=auth_failed`,
+    failureRedirect: `${getClientUrl()}/login?error=auth_failed`,
   }),
   (_req, res) => {
-    res.redirect(`${CLIENT_URL}/`);
+    res.redirect(`${getClientUrl()}/`);
   }
 );
 
