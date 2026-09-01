@@ -212,9 +212,19 @@ export function usePuzzleGame(
   const requestHint = useCallback(() => {
     const nextExpected = puzzle.solution[stepIndex];
     if (nextExpected) {
-      setHint(`Hint: Move piece on ${nextExpected.from.toUpperCase()} to ${nextExpected.to.toUpperCase()}`);
+      const piece = chess.get(nextExpected.from as ChessSquare);
+      const pieceNames: Record<string, string> = {
+        p: "Pawn",
+        n: "Knight",
+        b: "Bishop",
+        r: "Rook",
+        q: "Queen",
+        k: "King",
+      };
+      const pName = piece ? pieceNames[piece.type] : "piece";
+      setHint(`Hint: Look for a tactical move with your ${pName} on ${nextExpected.from.toUpperCase()}.`);
     }
-  }, [puzzle, stepIndex]);
+  }, [chess, puzzle, stepIndex]);
 
   return {
     board,

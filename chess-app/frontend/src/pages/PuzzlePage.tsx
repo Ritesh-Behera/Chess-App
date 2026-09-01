@@ -79,6 +79,20 @@ export default function PuzzlePage() {
     game.loadPuzzle(daily);
   };
 
+  // Universal Hint tracker: 3 hints per day
+  const [hintsRemaining, setHintsRemaining] = useState<number>(() => {
+    const saved = localStorage.getItem(`chess_hints_${todayStr}`);
+    return saved !== null ? parseInt(saved, 10) : 3;
+  });
+
+  const handleGetHint = () => {
+    if (hintsRemaining <= 0) return;
+    game.requestHint();
+    const nextCount = hintsRemaining - 1;
+    setHintsRemaining(nextCount);
+    localStorage.setItem(`chess_hints_${todayStr}`, String(nextCount));
+  };
+
   const isFlipped = currentPuzzle.playerColor === "b";
 
   return (
@@ -185,9 +199,10 @@ export default function PuzzlePage() {
               </button>
             </div>
           ) : (
-            <p className="text-xs text-ink-muted text-center py-1">
-              {currentPuzzle.description}
-            </p>
+            <div className="p-3 rounded-lg bg-surface border border-black/5 dark:border-white/5 text-xs text-ink text-center">
+              <span className="font-semibold text-ink-muted uppercase mr-1">Objective:</span>
+              <span>{currentPuzzle.description}</span>
+            </div>
           )}
 
           {/* Hint Area */}
@@ -209,10 +224,19 @@ export default function PuzzlePage() {
             {!game.isSolved && (
               <button
                 type="button"
-                onClick={game.requestHint}
-                className="px-4 py-2 text-xs font-medium rounded-lg bg-surface border border-black/10 dark:border-white/10 text-brass hover:bg-brass/5 transition"
+                onClick={handleGetHint}
+                disabled={hintsRemaining <= 0}
+                className={[
+                  "px-4 py-2 text-xs font-medium rounded-lg border transition-all flex items-center gap-1.5",
+                  hintsRemaining > 0
+                    ? "bg-surface border-brass/30 text-brass hover:bg-brass/10"
+                    : "bg-surface/50 border-black/5 dark:border-white/5 text-ink-faint cursor-not-allowed",
+                ].join(" ")}
               >
-                Get a Hint 💡
+                <span>💡 Hint</span>
+                <span className="px-1.5 py-0.2 text-[0.65rem] rounded-full bg-brass/20 text-brass font-semibold">
+                  {hintsRemaining}/3 today
+                </span>
               </button>
             )}
           </div>
