@@ -1,6 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { Chess, Square as ChessSquare, Move } from "chess.js";
 import { BoardPiece, GameStatus, PieceColor, PieceType } from "../types/chess";
+import { AIDifficulty, getAIMove } from "../lib/aiEngine";
+
+export type GameMode = "pvp" | "ai";
 
 export interface MoveHistoryEntry {
   san: string;
@@ -19,6 +22,13 @@ export interface UseChessGame {
   history: MoveHistoryEntry[];
   captured: { w: PieceType[]; b: PieceType[] };
   isGameOver: boolean;
+  isAiThinking: boolean;
+  gameMode: GameMode;
+  aiDifficulty: AIDifficulty;
+  aiColor: PieceColor;
+  setGameMode: (mode: GameMode) => void;
+  setAiDifficulty: (diff: AIDifficulty) => void;
+  setAiColor: (color: PieceColor) => void;
   pendingPromotion: { from: string; to: string } | null;
   select: (square: string) => void;
   completePromotion: (piece: "q" | "r" | "b" | "n") => void;
@@ -45,16 +55,22 @@ export function useChessGame(): UseChessGame {
     null
   );
 
+  // Computer AI state
+  const [gameMode, setGameMode] = useState<GameMode>("pvp");
+  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>("medium");
+  const [aiColor, setAiColor] = useState<PieceColor>("b");
+  const [isAiThinking, setIsAiThinking] = useState(false);
+
   const bump = () => forceRender((n) => n + 1);
 
   const chess = chessRef.current;
   const board = useMemo(() => toBoard(chess), [chess, selected, lastMove, pendingPromotion]);
 
   const legalTargets = useMemo(() => {
-    if (!selected) return [];
+    if (!selected || isAiThinking) return [];
     const moves = chess.moves({ square: selected as ChessSquare, verbose: true }) as Move[];
     return moves.map((m) => m.to as string);
-  }, [selected, chess, lastMove]);
+  }, [selected, chess, lastMove, isAiThinking]);
 
   const status: GameStatus = useMemo(() => {
     if (chess.isCheckmate()) return "checkmate";
@@ -69,6 +85,7 @@ export function useChessGame(): UseChessGame {
   const turn = chess.turn() as PieceColor;
 
   const statusLabel = useMemo(() => {
+    if (isAiThinking) return "Computer is thinking...";
     const mover = turn === "w" ? "White" : "Black";
     switch (status) {
       case "checkmate":
@@ -86,7 +103,7 @@ export function useChessGame(): UseChessGame {
       default:
         return `${mover} to move`;
     }
-  }, [status, turn]);
+  }, [status, turn, isAiThinking]);
 
   const history: MoveHistoryEntry[] = useMemo(() => {
     const verbose = chess.history({ verbose: true }) as Move[];
@@ -120,9 +137,32 @@ export function useChessGame(): UseChessGame {
     [chess]
   );
 
+  // Trigger computer move when it's AI's turn
+  useEffect(() => {
+    if (gameMode !== "ai" || chess.isGameOver() || chess.turn() !== aiColor) {
+      return;
+    }
+
+    setIsAiThinking(true);
+    const timer = setTimeout(() => {
+      const aiMove = getAIMove(chess, aiDifficulty);
+      if (aiMove) {
+        applyMove(aiMove.from, aiMove.to, aiMove.promotion as any);
+      }
+      setIsAiThinking(false);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [gameMode, aiColor, aiDifficulty, turn, applyMove, chess]);
+
   const select = useCallback(
     (square: string) => {
-      if (pendingPromotion) return;
+      if (pendingPromotion || isAiThinking) return;
+
+      // Prevent human player from selecting or moving during computer's turn in AI mode
+      if (gameMode === "ai" && chess.turn() === aiColor) {
+        return;
+      }
 
       // If a piece is already selected and this square is a legal target, move there.
       if (selected && legalTargets.includes(square)) {
@@ -144,7 +184,7 @@ export function useChessGame(): UseChessGame {
         setSelected(null);
       }
     },
-    [selected, legalTargets, chess, applyMove, pendingPromotion]
+    [selected, legalTargets, chess, applyMove, pendingPromotion, isAiThinking, gameMode, aiColor]
   );
 
   const completePromotion = useCallback(
@@ -208,6 +248,13 @@ export function useChessGame(): UseChessGame {
     history,
     captured,
     isGameOver: chess.isGameOver(),
+    isAiThinking,
+    gameMode,
+    aiDifficulty,
+    aiColor,
+    setGameMode,
+    setAiDifficulty,
+    setAiColor,
     pendingPromotion,
     select,
     completePromotion,

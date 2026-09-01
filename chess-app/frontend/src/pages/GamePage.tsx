@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useChessGame } from "../hooks/useChessGame";
 import { useAuth } from "../context/AuthContext";
 import { api, googleLoginUrl } from "../api/client";
+import { AIDifficulty, DIFFICULTY_LABELS } from "../lib/aiEngine";
 import Board from "../components/board/Board";
 import GameStatus from "../components/panel/GameStatus";
 import MoveHistory from "../components/panel/MoveHistory";
@@ -21,6 +22,19 @@ export default function GamePage() {
   const handleNewGame = () => {
     game.reset();
     setSavedMessage(null);
+  };
+
+  const handleModeChange = (mode: "pvp" | "ai") => {
+    game.setGameMode(mode);
+    if (mode === "ai") {
+      setBlackName("Computer (Bot)");
+      setWhiteName(user ? user.name : "Player");
+      setFlipped(false);
+    } else {
+      setWhiteName("White");
+      setBlackName("Black");
+    }
+    game.reset();
   };
 
   const handleSave = async () => {
@@ -67,23 +81,77 @@ export default function GamePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      {/* Mode Switcher Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 p-3 rounded-xl bg-panel border border-black/10 dark:border-white/10">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleModeChange("pvp")}
+            className={[
+              "px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5",
+              game.gameMode === "pvp"
+                ? "bg-brass text-white shadow-sm"
+                : "bg-surface border border-black/5 dark:border-white/5 text-ink-muted hover:text-ink",
+            ].join(" ")}
+          >
+            <span>👥</span>
+            <span>2 Players (Pass & Play)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleModeChange("ai")}
+            className={[
+              "px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5",
+              game.gameMode === "ai"
+                ? "bg-brass text-white shadow-sm"
+                : "bg-surface border border-black/5 dark:border-white/5 text-ink-muted hover:text-ink",
+            ].join(" ")}
+          >
+            <span>🤖</span>
+            <span>vs Computer</span>
+          </button>
+        </div>
+
+        {/* AI Difficulty Selector */}
+        {game.gameMode === "ai" && (
+          <div className="flex items-center gap-2 animate-in fade-in">
+            <span className="text-xs text-ink-muted font-medium">Difficulty:</span>
+            <select
+              value={game.aiDifficulty}
+              onChange={(e) => {
+                const diff = e.target.value as AIDifficulty;
+                game.setAiDifficulty(diff);
+                setBlackName(`Computer (${DIFFICULTY_LABELS[diff].name})`);
+              }}
+              className="px-2.5 py-1 text-xs font-medium rounded-lg bg-surface border border-black/10 dark:border-white/10 text-ink focus-visible:outline-none focus:ring-1 focus:ring-brass"
+            >
+              {(Object.keys(DIFFICULTY_LABELS) as AIDifficulty[]).map((d) => (
+                <option key={d} value={d}>
+                  {DIFFICULTY_LABELS[d].name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
       <div className="grid lg:grid-cols-[minmax(0,1fr)_20rem] gap-5 sm:gap-6 items-start">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <input
               value={flipped ? blackName : whiteName}
               onChange={(e) => (flipped ? setBlackName : setWhiteName)(e.target.value)}
-              className="bg-transparent font-display text-lg w-32 focus-visible:outline-none border-b border-transparent focus:border-ink-faint"
+              className="bg-transparent font-display text-lg w-40 focus-visible:outline-none border-b border-transparent focus:border-ink-faint"
               aria-label="Top player name"
-              maxLength={20}
+              maxLength={30}
             />
             <span className="text-xs text-ink-faint uppercase tracking-wide">vs</span>
             <input
               value={flipped ? whiteName : blackName}
               onChange={(e) => (flipped ? setWhiteName : setBlackName)(e.target.value)}
-              className="bg-transparent font-display text-lg w-32 text-right focus-visible:outline-none border-b border-transparent focus:border-ink-faint"
+              className="bg-transparent font-display text-lg w-40 text-right focus-visible:outline-none border-b border-transparent focus:border-ink-faint"
               aria-label="Bottom player name"
-              maxLength={20}
+              maxLength={30}
             />
           </div>
           <Board game={game} flipped={flipped} />

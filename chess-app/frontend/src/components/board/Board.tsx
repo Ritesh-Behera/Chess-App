@@ -57,10 +57,12 @@ export default function Board({ game, flipped }: BoardProps) {
                 ].join(" ")}
               >
                 {isLastMove && <span className="absolute inset-0 bg-brass/25" aria-hidden="true" />}
-                {isCheck && <span className="absolute inset-0 bg-garnet/45" aria-hidden="true" />}
+                {isCheck && <span className="absolute inset-0 bg-garnet/45 animate-pulse" aria-hidden="true" />}
                 {isSelected && (
-                  <span
-                    className="absolute inset-0.5 rounded-sm ring-2 ring-brass"
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute inset-0 bg-brass/35 ring-4 ring-brass shadow-[inset_0_0_12px_rgba(217,119,6,0.5)] z-10"
                     aria-hidden="true"
                   />
                 )}
